@@ -1,23 +1,62 @@
 import UsersDao from "./dao.js";
 //let currentUser = null;
 //setup the routes as functions
-export default function UserRoutes(app, db) {
-  const dao = UsersDao(db);
-  const createUser = (req, res) => {};
-  const deleteUser = (req, res) => {};
-  const findAllUsers = (req, res) => {};
-  const findUserById = (req, res) => {};
+let currentUser = null;
+export default function UserRoutes(app) {
+  const dao = UsersDao();
+  //this function inserts a newuser into the database and returns the newly inserted
+  //user which is sent back to the user interface in the response
+  const createUser = async (req, res) => {
+    const user = await dao.createUser(req.body);
+    res.json(user);
+  };
+
+  //this route makes the deleteUser operation available to the rest of the API
+  const deleteUser = async (req, res) => {
+    const status = await dao.deleteUser(req.params.userId);
+    res.json(status);
+  };
+
+  //the route implemented below uses the findAllUsers function implemented by the DAO
+  //to retrieve all users from the database
+  //the route responds with the collection of users retrieved from the database
+  //retrives users with that particual role
+  const findAllUsers = async (req, res) => {
+    const { role, name } = req.query;
+    if (role) {
+      const users = await dao.findUsersByRole(role);
+      res.json(users);
+      return;
+    }
+    if (name) {
+      const users = await dao.findUsersByPartialName(name);
+      res.json(users);
+      return;
+    }
+
+    const users = await dao.findAllUsers();
+    res.json(users);
+  };
+
+  //making the findUserbyId function available as a RESTful Web API
+  const findUserById = async (req, res) => {
+    const user = await dao.findUserById(req.params.userId);
+    res.json(user);
+  };
+
   //make the DAO function available as a RESTFUL Web APi
   //make a route that accepts a user's primary key as a path parameter
   //passes the ID and request body to the DAO function and
   //responds with the status
   //IF THE USER UPDATES THEIR PROFILE, THEN THE SESSION MUST BE KEPT IN SYNCH
-  const updateUser = (req, res) => {
-    const userId = req.params.userId;
+  const updateUser = async (req, res) => {
+    const { userId } = req.params;
     const userUpdates = req.body;
-    dao.updateUser(userId, userUpdates);
-    const currentUser = dao.findUserById(userId);
-    req.session["currentUser"] = currentUser;
+    await dao.updateUser(userId, userUpdates);
+    const currentUser = req.session["currentUser"];
+    if (currentUser && currentUser._id === userId) {
+      req.session["currentUser"] = { ...currentUser, ...userUpdates };
+    }
     res.json(currentUser);
   };
 
@@ -26,14 +65,14 @@ export default function UserRoutes(app, db) {
   //if the username is not already taken the user is inserted into the database and
   //stored in the currentUser server variable
   //the response includes the newly createdUser
-  const signup = (req, res) => {
-    const user = dao.findUserByUsername(req.body.username);
+  const signup = async (req, res) => {
+    const user = await dao.findUserByUsername(req.body.username);
     if (user) {
       res.status(400).json({ message: "Username already in use" });
       return;
     }
 
-    const currentUser = dao.createUser(req.body);
+    const currentUser = await dao.createUser(req.body);
     //storing the logged in user in the session
     req.session["currentUser"] = currentUser;
     res.json(currentUser);
@@ -46,9 +85,9 @@ export default function UserRoutes(app, db) {
   //an existing user can identify themselves by providing credentials
   //the signin route below looks up the user by their credentials, stores it in
   //current user session and responds with the user if they exists
-  const signin = (req, res) => {
+  const signin = async (req, res) => {
     const { username, password } = req.body;
-    const currentUser = dao.findUserByCredentials(username, password);
+    const currentUser = await dao.findUserByCredentials(username, password);
     if (currentUser) {
       req.session["currentUser"] = currentUser;
       res.json(currentUser);
@@ -78,6 +117,8 @@ export default function UserRoutes(app, db) {
     res.json(currentUser);
   };
 
+  app.get("/api/users", findAllUsers);
+  app.get("/api/users", findAllUsers);
   app.post("/api/users", createUser);
   app.get("/api/users", findAllUsers);
   app.get("/api/users/:userId", findUserById);

@@ -3,6 +3,7 @@
 import "dotenv/config";
 import session from "express-session";
 import express from "express";
+import mongoose from "mongoose";
 import Hello from "./Hello.js";
 import Lab5 from "./Lab5/index.js";
 import cors from "cors";
@@ -10,6 +11,12 @@ import db from "./Kambaz/Database/index.js";
 import UserRoutes from "./Kambaz/Users/routes.js";
 import CourseRoutes from "./Kambaz/Courses/routes.js";
 import ModulesRoutes from "./Kambaz/Modules/routes.js";
+import AssignmentRoutes from "./Kambaz/Assignments/routes.js";
+
+//connect the mongoose to the kambaz database
+const CONNECTION_STRING =
+  process.env.DATABASE_CONNECTION_STRING || "mongodb://127.0.0.1:27017/kambaz";
+mongoose.connect(CONNECTION_STRING);
 
 const app = express();
 //pass a reference to the database for each of the routes
@@ -40,6 +47,7 @@ app.use(express.json());
 //create a new express instance and assignmet to the local constant app
 //Hello is the function from the Hello.js file
 //THESE ARE THE DIFFERENT ROUTES
+AssignmentRoutes(app, db);
 UserRoutes(app, db);
 CourseRoutes(app, db);
 ModulesRoutes(app, db);

@@ -31,17 +31,18 @@ export default function ModulesRoutes(app, db) {
     const status = dao.deleteModule(moduleId);
     res.send(status);
   };
-  //prrses the ID of the cuorse from the URL and the module updates
-  //from the HTTP request body. Use the DAO's updateModule function
-  //to apply the updates to the module
-  const updateModule = async (req, res) => {
+
+  const updateModule = (req, res) => {
     const { moduleId } = req.params;
-    const moduleUpdates = req.body;
-    const status = await dao.updateModule(moduleId, moduleUpdates);
+    const status = dao.updateModule(moduleId, req.body);
     res.send(status);
   };
 
+  //prrses the ID of the cuorse from the URL and the module updates
+  //from the HTTP request body. Use the DAO's updateModule function
+  //to apply the updates to the modu
   app.put("/api/modules/:moduleId", updateModule);
+
   app.delete("/api/modules/:moduleId", deleteModule);
   app.post("/api/courses/:courseId/modules", createModuleForCourse);
   app.get("/api/courses/:courseId/modules", findModulesForCourse);
