@@ -117,6 +117,8 @@ export default function UserRoutes(app) {
     res.json(currentUser);
   };
 
+  //comment
+
   app.get("/api/users", findAllUsers);
   app.get("/api/users", findAllUsers);
   app.post("/api/users", createUser);
