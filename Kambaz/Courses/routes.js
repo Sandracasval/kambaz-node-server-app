@@ -1,6 +1,7 @@
 import CoursesDao from "./dao.js";
 import EnrollmentsDao from "../Enrollments/dao.js";
-export default function CourseRoutes(app, db) {
+import db from "../Database/index.js";
+export default function CourseRoutes(app) {
   const dao = CoursesDao(db);
 
   //createCourse creates a new course and enrolls the currentUser in the newCourse
@@ -13,15 +14,15 @@ export default function CourseRoutes(app, db) {
     res.json(newCourse);
   };
 
-  const findAllCourses = (req, res) => {
-    const courses = dao.findAllCourses();
+  const findAllCourses = async (req, res) => {
+    const courses = await dao.findAllCourses();
     res.send(courses);
   };
 
   //since enrolled courses are retrieved within the context of the currently logged in user
   //implement the following route to retrieve the courses in the user route
   //calling the dao version of the function which reads from the database
-  const findCoursesForEnrolledUser = (req, res) => {
+  const findCoursesForEnrolledUser = async (req, res) => {
     let { userId } = req.params;
     if (userId === "current") {
       const currentUser = req.session["currentUser"];
@@ -31,7 +32,7 @@ export default function CourseRoutes(app, db) {
       }
       userId = currentUser._id;
     }
-    const courses = dao.findCoursesForEnrolledUser(userId);
+    const courses = await dao.findCoursesForEnrolledUser(userId);
     res.json(courses);
   };
 

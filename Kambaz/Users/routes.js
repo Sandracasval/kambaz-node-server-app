@@ -120,9 +120,7 @@ export default function UserRoutes(app) {
   //comment n
 
   app.get("/api/users", findAllUsers);
-  app.get("/api/users", findAllUsers);
   app.post("/api/users", createUser);
-  app.get("/api/users", findAllUsers);
   app.get("/api/users/:userId", findUserById);
   app.put("/api/users/:userId", updateUser);
   app.delete("/api/users/:userId", deleteUser);
