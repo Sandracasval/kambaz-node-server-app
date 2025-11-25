@@ -117,7 +117,7 @@ export default function UserRoutes(app) {
     res.json(currentUser);
   };
 
-  //comment
+  //comment n
 
   app.get("/api/users", findAllUsers);
   app.get("/api/users", findAllUsers);
