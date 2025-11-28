@@ -51,6 +51,7 @@ export default function CourseRoutes(app) {
   //and uses the updateCourse DAO function to update the corresponding course
   //with the updates in HTTP request body
   //if the update is succesful, respond with a status 204
+  //adding a comment 
   const updateCourse = async (req, res) => {
     const { courseId } = req.params;
     const courseUpdates = req.body;
