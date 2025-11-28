@@ -1,39 +1,49 @@
 import { v4 as uuidv4 } from "uuid";
+import model from "../Courses/model.js";
 
 export default function ModulesDao(db) {
   //updateModule updates a module in the Datbase by its ID.
   //First lookup the module by its ID
   //and then apply the updates to the module as shown
-  function updateModule(moduleId, moduleUpdates) {
-    const { modules } = db;
-    const module = modules.find((module) => module._id === moduleId);
+  async function updateModule(courseId, moduleId, moduleUpdates) {
+    const course = await model.findById(courseId);
+    const module = course.modules.id(moduleId);
     Object.assign(module, moduleUpdates);
+    await course.save();
     return module;
   }
 
   //deleteModule removes a module from the Database by its ID as shown below
-  function deleteModule(moduleId) {
-    const { modules } = db;
-    db.modules = modules.filter((module) => module._id !== moduleId);
+  async function deleteModule(courseId, moduleId) {
+    const status = await model.updateOne(
+      { _id: courseId },
+      { $pull: { modules: { _id: moduleId } } }
+    );
+    return status;
   }
 
   //This retrievers a courses modules by its id
   //createModule accepts the new Module as a parameter, sets its primary key
   //and then appends the new Module to the Databases module array
-  function createModule(module) {
+
+  async function createModule(courseId, module) {
     const newModule = { ...module, _id: uuidv4() };
-    db.modules = [...db.modules, newModule];
+    const status = await model.updateOne(
+      { _id: courseId },
+      { $push: { modules: newModule } }
+    );
     return newModule;
   }
-  function findModulesForCourse(courseId) {
-    const { modules } = db;
-    return modules.filter((module) => module.course === courseId);
+
+  async function findModulesForCourse(courseId) {
+    const course = await model.findById(courseId);
+    return course.modules;
   }
 
   return {
     createModule,
     findModulesForCourse,
     deleteModule,
-    updateModule
+    updateModule,
   };
 }

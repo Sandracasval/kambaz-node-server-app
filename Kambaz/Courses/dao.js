@@ -3,13 +3,13 @@ import model from "./model.js";
 //IMPLEMENT A DAO TO RETRIEVE ALL COURSES FROM THE DATABASE
 export default function CoursesDao(db) {
   function findAllCourses() {
-    return model.find();
+    return model.find({}, { name: 1, description: 1 });
   }
 
   //RETRIEVES THE COURSES THAT THE CURRENT USER IS ENROLLED IN
   async function findCoursesForEnrolledUser(userId) {
     const { enrollments } = db;
-    const courses = await model.find();
+    const courses = await model.find({}, { name: 1, description: 1 });
     const enrolledCourses = courses.filter((course) =>
       enrollments.some(
         (enrollment) =>
@@ -26,8 +26,7 @@ export default function CoursesDao(db) {
   //response
   function createCourse(course) {
     const newCourse = { ...course, _id: uuidv4() };
-    db.courses = [...db.courses, newCourse];
-    return newCourse;
+    return model.create(newCourse);
   }
 
   //implement a route that removes a course and all enrollments associated with
@@ -35,21 +34,14 @@ export default function CoursesDao(db) {
   //by its ID and then filters out all enrollments by by the courses id.
   //the filter function removes the course and the associated enrollments
   function deleteCourse(courseId) {
-    const { courses, enrollments } = db;
-    db.courses = courses.filter((course) => course._id !== courseId);
-    db.enrollments = enrollments.filter(
-      (enrollment) => enrollment.course !== courseId
-    );
+    return model.deleteOne({ _id: courseId });
   }
 
   //this function updates a course in the Database
   //by first looking up the course by its ID, then applying the updates to the course
   //as shown belo
   function updateCourse(courseId, courseUpdates) {
-    const { courses } = db;
-    const course = courses.find((course) => course._id === courseId);
-    Object.assign(course, courseUpdates);
-    return course;
+    return model.updateOne({ _id: courseId }, { $set: courseUpdates });
   }
 
   return {

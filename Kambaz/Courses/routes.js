@@ -7,9 +7,10 @@ export default function CourseRoutes(app) {
   //createCourse creates a new course and enrolls the currentUser in the newCourse
   //so that it can be rendered in the user interface
   const enrollmentsDao = EnrollmentsDao(db);
-  const createCourse = (req, res) => {
+
+  const createCourse = async (req, res) => {
     const currentUser = req.session["currentUser"];
-    const newCourse = dao.createCourse(req.body);
+    const newCourse = await dao.createCourse(req.body);
     enrollmentsDao.enrollUserInCourse(currentUser._id, newCourse._id);
     res.json(newCourse);
   };
@@ -32,16 +33,17 @@ export default function CourseRoutes(app) {
       }
       userId = currentUser._id;
     }
-    const courses = await dao.findCoursesForEnrolledUser(userId);
+    const courses = await enrollmentsDao.findCoursesForUser(userId);
     res.json(courses);
   };
 
   //this delete route parses the course's ID from the url and uses the deleteCourse
   //DAO funciton as shown below.
 
-  const deleteCourse = (req, res) => {
+  const deleteCourse = async (req, res) => {
     const { courseId } = req.params;
-    const status = dao.deleteCourse(courseId);
+    await enrollmentsDao.unenrollAllUsersFromCourse(courseId);
+    const status = await dao.deleteCourse(courseId);
     res.send(status);
   };
 
@@ -49,10 +51,10 @@ export default function CourseRoutes(app) {
   //and uses the updateCourse DAO function to update the corresponding course
   //with the updates in HTTP request body
   //if the update is succesful, respond with a status 204
-  const updateCourse = (req, res) => {
+  const updateCourse = async (req, res) => {
     const { courseId } = req.params;
     const courseUpdates = req.body;
-    const status = dao.updateCourse(courseId, courseUpdates);
+    const status = await dao.updateCourse(courseId, courseUpdates);
     res.send(status);
   };
 
